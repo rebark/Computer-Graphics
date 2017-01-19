@@ -84,8 +84,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>../../Computer Graphics/Libraries/headers;$(IncludePath)</IncludePath>
-    <LibraryPath>../../Computer Graphics/Libraries/lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\Libraries\headers;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>../../Computer Graphics/Libraries/headers;$(IncludePath)</IncludePath>
