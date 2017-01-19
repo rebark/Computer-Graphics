@@ -45,7 +45,7 @@ glm::vec3 spotPos(0.5f, 1.0f, 2.0f);
 GLfloat deltaTime = 0.0f;   // Time between current frame and last frame
 GLfloat lastFrame = 0.0f;	// Time of last frame
 
-// The MAIN function, from here we start our application and run our Game loop
+							// The MAIN function, from here we start our application and run our Game loop
 int main()
 {
 	// Init GLFW
@@ -83,7 +83,7 @@ int main()
 	Shader lightShader("light.vs", "light.fs");
 
 	// Load models
-	Model ourModel("model/test.obj");
+	Model ourModel("model_spec/test.obj");
 
 	//light
 	// Set up vertex data (and buffer(s)) and attribute pointers
@@ -176,7 +176,7 @@ int main()
 
 		// Point light 1
 		glUniform3f(glGetUniformLocation(shader.Program, "pointLight.position"), lampPos.x, lampPos.y, lampPos.z);
-		glUniform3f(glGetUniformLocation(shader.Program, "pointLight.color"),1.0f, 1.0f, 1.0f);
+		glUniform3f(glGetUniformLocation(shader.Program, "pointLight.color"), 1.0f, 1.0f, 1.0f);
 		glUniform1f(glGetUniformLocation(shader.Program, "pointLight.intensity"), 0.5f);
 		glUniform1f(glGetUniformLocation(shader.Program, "pointLight.constant"), 1.0f);
 		glUniform1f(glGetUniformLocation(shader.Program, "pointLight.linear"), 0.09);

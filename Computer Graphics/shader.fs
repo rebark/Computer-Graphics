@@ -64,7 +64,7 @@ void main()
 	vec3 spot = ComputeSpot(spotLight, norm, FragPos, viewDir, objectColor, specMap);
 	vec3 light = directional + point + spot;
 		
-	color = vec4(light, 1.0);	
+	color = vec4(light, 1.0f);	
 }
 
 vec3 ComputeDir(DirectionalLight light, vec3 normal, vec3 viewDir, vec3 objectColor, vec3 specMap)

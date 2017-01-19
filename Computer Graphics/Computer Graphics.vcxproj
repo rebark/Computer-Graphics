@@ -84,20 +84,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\headers;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../Computer Graphics/Libraries/headers;$(IncludePath)</IncludePath>
+    <LibraryPath>../../Computer Graphics/Libraries/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\headers;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../Computer Graphics/Libraries/headers;$(IncludePath)</IncludePath>
+    <LibraryPath>../../Computer Graphics/Libraries/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\headers;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../Computer Graphics/Libraries/headers;$(IncludePath)</IncludePath>
+    <LibraryPath>../../Computer Graphics/Libraries/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\headers;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Carolina\Documents\Computer Graphics\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>../../Computer Graphics/Libraries/headers;$(IncludePath)</IncludePath>
+    <LibraryPath>../../Computer Graphics/Libraries/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
