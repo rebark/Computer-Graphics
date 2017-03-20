@@ -32,6 +32,8 @@
     <None Include="light.vs" />
     <None Include="shader.fs" />
     <None Include="shader.vs" />
+    <None Include="shaders\standard_shader.fs" />
+    <None Include="shaders\standard_shader.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{07A97956-56C5-45B7-8B59-D66F5C254EB4}</ProjectGuid>

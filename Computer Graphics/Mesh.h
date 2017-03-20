@@ -19,6 +19,8 @@ struct Vertex {
 	glm::vec3 Normal;
 	// TexCoords
 	glm::vec2 TexCoords;
+	// Tangent
+	glm::vec3 Tangent;
 };
 
 struct Texture {
@@ -52,9 +54,11 @@ public:
 		// Bind appropriate textures
 		GLuint diffuseNr = 1;
 		GLuint specularNr = 1;
+		GLuint normalNr = 1;
+		bool hasNormalMap = false;
 		for (GLuint i = 0; i < this->textures.size(); i++)
 		{
-			glActiveTexture(GL_TEXTURE0 + i); // Active proper texture unit before binding
+			glActiveTexture(GL_TEXTURE1 + i); // Active proper texture unit before binding
 											  // Retrieve texture number (the N in diffuse_textureN)
 			stringstream ss;
 			string number;
@@ -63,15 +67,24 @@ public:
 				ss << diffuseNr++; // Transfer GLuint to stream
 			else if (name == "texture_specular")
 				ss << specularNr++; // Transfer GLuint to stream
+			else if (name == "texture_normal")
+			{
+				ss << normalNr++;
+				hasNormalMap = true;
+			}
 			number = ss.str();
 			// Now set the sampler to the correct texture unit
-			glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
+			glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i+1);
+			// Set the mapping booleans
+			glUniform1i(glGetUniformLocation(shader.Program, "hasNormalMap"), hasNormalMap);
 			// And finally bind the texture
 			glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
 		}
 
 		// Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
 		glUniform1f(glGetUniformLocation(shader.Program, "material.shininess"), 16.0f);
+
+
 
 		// Draw mesh
 		glBindVertexArray(this->VAO);
@@ -81,7 +94,7 @@ public:
 		// Always good practice to set everything back to defaults once configured.
 		for (GLuint i = 0; i < this->textures.size(); i++)
 		{
-			glActiveTexture(GL_TEXTURE0 + i);
+			glActiveTexture(GL_TEXTURE1 + i);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
@@ -120,9 +133,11 @@ private:
 		// Vertex Texture Coords
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, TexCoords));
+		//Vertex Tangents
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Tangent));
+
 
 		glBindVertexArray(0);
 	}
 };
-
-

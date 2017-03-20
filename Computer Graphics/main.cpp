@@ -222,7 +222,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.Use();
 		//initialize view and lights
-		glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 2);
+		glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 0);
 		GLint viewPosLoc = glGetUniformLocation(shader.Program, "viewPos");
 		glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
 		set_lights(shader);

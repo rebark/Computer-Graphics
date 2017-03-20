@@ -46,5 +46,11 @@
     <None Include="light.vs">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shaders\standard_shader.fs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shaders\standard_shader.vs">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

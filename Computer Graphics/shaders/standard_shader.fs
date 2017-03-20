@@ -30,6 +30,9 @@ in VS_OUT {
     vec3 Normal;
     vec2 TexCoords;
     vec4 FragPosLightSpace;
+	mat3 TBN;
+
+	vec3 gotTangent;
 } fs_in;
 
 
@@ -39,9 +42,12 @@ uniform vec3 lightPos;
 uniform vec3 lightColor;
 
 //textures
+uniform sampler2D shadowMap;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
-uniform sampler2D shadowMap;
+uniform sampler2D texture_normal1;
+
+uniform bool hasNormalMap;
 
 //lights
 uniform PointLight pointLight;
@@ -92,6 +98,15 @@ void main()
 {
 	//fixed properties
 	vec3 normal = normalize(fs_in.Normal);
+
+	//apply normal mapping
+	if(hasNormalMap)
+	{
+		normal = vec3(texture(texture_normal1, fs_in.TexCoords));
+		normal = normalize(normal * 2.0 - 1.0);   
+		normal = normalize(fs_in.TBN * normal);
+	}	
+
 	vec3 lightDir = normalize(lightPos);
 	vec3 objectColor =  vec3(texture(texture_diffuse1, fs_in.TexCoords));
 
@@ -105,8 +120,8 @@ void main()
 	//Specular
 	vec3 viewDir = normalize(viewPos- fs_in.FragPos);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
-  float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
-	vec3 specMap = vec3(texture(texture_specular1, fs_in.TexCoords));
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+	vec3 specMap = vec3(texture(texture_specular1, fs_in.TexCoords));  
 	vec3 specular = spec * specMap * lightColor;
 
 	//shadows
