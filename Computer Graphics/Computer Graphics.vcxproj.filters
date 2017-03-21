@@ -46,10 +46,15 @@
     <None Include="light.vs">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="shaders\standard_shader.fs">
+    <None Include="shaders\standard_shader.fs" />
+    <None Include="shaders\standard_shader.vs" />
+    <None Include="shaders\god_rays.fs">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="shaders\standard_shader.vs">
+    <None Include="shaders\god_rays.vs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shaders\render.fs">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

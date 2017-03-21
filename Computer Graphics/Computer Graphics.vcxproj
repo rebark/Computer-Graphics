@@ -32,6 +32,9 @@
     <None Include="light.vs" />
     <None Include="shader.fs" />
     <None Include="shader.vs" />
+    <None Include="shaders\god_rays.fs" />
+    <None Include="shaders\god_rays.vs" />
+    <None Include="shaders\render.fs" />
     <None Include="shaders\standard_shader.fs" />
     <None Include="shaders\standard_shader.vs" />
   </ItemGroup>

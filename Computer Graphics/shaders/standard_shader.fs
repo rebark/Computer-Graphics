@@ -31,8 +31,6 @@ in VS_OUT {
     vec2 TexCoords;
     vec4 FragPosLightSpace;
 	mat3 TBN;
-
-	vec3 gotTangent;
 } fs_in;
 
 
