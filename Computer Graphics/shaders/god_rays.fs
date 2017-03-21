@@ -1,9 +1,9 @@
 #version 330 core
 
-#define NUM_SAMPLES 128
+#define NUM_SAMPLES 10
 #define G_SCATTERING 0.2
 #define PI 3.14159
-#define TAU 0.0002
+#define TAU 0.00002
 
 out vec4 color;
 
@@ -45,7 +45,7 @@ void main()
 
    //total light contribution accumulated along the ray
   float L_insc = 0.0f;
-  float Prev = -1.0f;
+  float prev_ins = 1.0f;
   float curr_ins = 0.0f;
 
   //start the actual ray marching
@@ -57,14 +57,14 @@ void main()
     sample = sample * 0.5 + 0.5;
 
     float shadowMapValue = texture(shadowMap, sample.xy).r;
-    float d = stepSize * i; //travelled distance on the ray
+	float d = stepSize * i; //travelled distance on the ray
     curr_ins = exp(- d * TAU);
     if (shadowMapValue > sample.z){
-      L_insc += curr_ins - Prev;
+      L_insc += curr_ins - prev_ins;
     }
-    Prev = curr_ins;
-
-    currentPosition += stepSize * rayDirection;
+    
+	prev_ins = curr_ins;
+	currentPosition += stepSize * rayDirection;
   }
   vec3 scattering = L_insc * mie_phase * lightColor;
   color = vec4(scattering, 1.0f);

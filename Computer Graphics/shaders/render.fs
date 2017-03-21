@@ -12,6 +12,6 @@ void main()
     vec4 render = texture(scene, TexCoords);
     vec4 godRays = texture(rays, TexCoords);
 
-    color = render;
+    color = godRays;
     //color = vec4(0.5f, 0.5f, 0.5f, 1.0f);
 }
