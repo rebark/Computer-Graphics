@@ -57,5 +57,8 @@
     <None Include="shaders\render.fs">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shaders\render.vs">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

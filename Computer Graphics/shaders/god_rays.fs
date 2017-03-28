@@ -1,9 +1,9 @@
 #version 330 core
 
-#define NUM_SAMPLES 10
-#define G_SCATTERING 0.2
-#define PI 3.14159
-#define TAU 0.00002
+#define NUM_SAMPLES 100.0f //antilag
+#define G_SCATTERING 0.2f
+#define PI 3.14159f
+#define TAU 0.00002f
 
 out vec4 color;
 
@@ -11,7 +11,7 @@ in VS_OUT {
     vec3 FragPos;
     vec3 Normal;
     vec2 TexCoords;
-    vec4 FragPosLightSpace;
+    
 } fs_in;
 
 //view and directional light
@@ -33,7 +33,7 @@ float ComputeScattering(float lightDotView)
 
 void main()
 {
-  vec3 rayVector = fs_in.FragPos- viewPos;
+  vec3 rayVector = fs_in.FragPos - viewPos;
 
   float rayLength = length(rayVector);
   vec3 rayDirection = rayVector / rayLength;
@@ -44,7 +44,7 @@ void main()
   vec3 currentPosition = viewPos;
 
    //total light contribution accumulated along the ray
-  float L_insc = 0.0f;
+  float L_insc = 1.0f * exp(- rayLength * TAU);
   float prev_ins = 1.0f;
   float curr_ins = 0.0f;
 
@@ -54,18 +54,19 @@ void main()
     // transform into light space and perform perspective divide
     vec4 sampleLS = lightSpaceMatrix * vec4(currentPosition, 1.0f);
     vec3 sample = sampleLS.xyz / sampleLS.w;
-    sample = sample * 0.5 + 0.5;
+    sample = sample * 0.5f + 0.5f;
 
     float shadowMapValue = texture(shadowMap, sample.xy).r;
 	float d = stepSize * i; //travelled distance on the ray
     curr_ins = exp(- d * TAU);
     if (shadowMapValue > sample.z){
-      L_insc += curr_ins - prev_ins;
+      L_insc += mie_phase;
     }
     
 	prev_ins = curr_ins;
 	currentPosition += stepSize * rayDirection;
   }
-  vec3 scattering = L_insc * mie_phase * lightColor;
-  color = vec4(scattering, 1.0f);
+  //vec3 scattering = L_insc * mie_phase * lightColor;
+  vec3 scattering = L_insc / NUM_SAMPLES * lightColor;
+  color = 6 * vec4(scattering, 1.0f);
 }

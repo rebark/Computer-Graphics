@@ -31,15 +31,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void Do_Movement();
 void set_lights(Shader &shader);
 void RenderQuad();
+void updateLight();
 
 // Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
 
 // Light attributes
-glm::vec3 lightPos(0.5f, 10.0f, 0.0f);
+glm::vec3 lightPos(0.5f, 15.0f, 0.0f);
 glm::vec3 lampPos(0.5f, -0.8f, -4.2f);
 glm::vec3 spotPos(-0.1f, 1.0f, 2.3f);
 
@@ -90,7 +91,9 @@ int main()
 
 	// Load models
 	Model ourModel("nope/nope.obj");
+	Model eva("eva/eva1.obj");
 
+	
 	// Configure depth map FBO
 	const GLuint SHADOW_WIDTH = 3000, SHADOW_HEIGHT = 3000;
 	GLuint depthMapFBO;
@@ -160,26 +163,33 @@ int main()
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
+
 		// Set frame time
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-
+		
+		glm::mat4 rotationMat(1);
+		rotationMat = glm::rotate(rotationMat, currentFrame / 50000, glm::vec3(0.0, 0.0, 1.0));
+		lightPos = glm::vec3(rotationMat * glm::vec4(lightPos, 1.0));
+		
 		// Check and call events
 		glfwPollEvents();
 		Do_Movement();
-
+		
+		//std::cout << "Time:" << currentFrame << std::endl;
+		
 		/////////////////////////////////////////////////////
 		// PASS 1
 		// Render depth of scene to texture 
 		// (from ligth's perspective)
 		// //////////////////////////////////////////////////
-
+		
 		// - Get light projection/view matrix.
 		glm::mat4 lightProjection, lightView;
 		glm::mat4 lightSpaceMatrix;
 		GLfloat near_plane = 1.0f, far_plane = 100.0f;
-		lightProjection = glm::ortho(-20.0f, 10.0f, -10.0f, 20.0f, near_plane, far_plane);
+		lightProjection = glm::ortho(-20.0f, 20.0f, -10.0f, 20.0f, near_plane, far_plane);
 		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 		lightSpaceMatrix = lightProjection * lightView;
 		// - now render scene from light's point of view
@@ -223,8 +233,13 @@ int main()
 		glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 0);
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		ourModel.Draw(shader);
-		
+		glm::mat4 evaMod;
+		evaMod = glm::scale(evaMod, glm::vec3(0.2f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(evaMod));
+		eva.Draw(shader);
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
 
 		////////////////////////////////////////////////////
 		// PASS 3
@@ -237,7 +252,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		godRays.Use();
 		//initialize view and lights
-		GLint viewPosLoc2 = glGetUniformLocation(shader.Program, "viewPos");
+		GLint viewPosLoc2 = glGetUniformLocation(godRays.Program, "viewPos");
 		glUniform3f(viewPosLoc2, camera.Position.x, camera.Position.y, camera.Position.z);
 		glUniform3f(glGetUniformLocation(godRays.Program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 		glUniform3f(glGetUniformLocation(godRays.Program, "lightColor"), 1.0f, 1.0f, 1.0f);
@@ -248,6 +263,7 @@ int main()
 		glUniformMatrix4fv(glGetUniformLocation(godRays.Program, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
+		glUniformMatrix4fv(glGetUniformLocation(godRays.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		ourModel.Draw(godRays);
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -267,6 +283,12 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, rays);
 		glUniform1i(glGetUniformLocation(quad.Program, "rays"), 1);
+
+		/*debugDepthQuad.Use();
+		glUniform1f(glGetUniformLocation(debugDepthQuad.Program, "near_plane"), near_plane);
+		glUniform1f(glGetUniformLocation(debugDepthQuad.Program, "far_plane"), far_plane);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);*/
 		RenderQuad();
 		
 		// Swap the buffers
@@ -336,6 +358,12 @@ void RenderQuad()
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
+}
+
+void updateLight() {
+	glm::mat4 rotationMat(1);
+	//rotationMat = glm::rotate(rotationMat, currentFrame / 100000, glm::vec3(0.0, 0.0, 1.0));
+	lightPos = glm::vec3(rotationMat * glm::vec4(lightPos, 1.0));
 }
 
 
