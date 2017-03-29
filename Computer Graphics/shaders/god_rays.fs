@@ -18,6 +18,7 @@ in VS_OUT {
 uniform vec3 viewPos;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
+uniform float lightInt;
 
 //shadow map
 uniform sampler2D shadowMap;
@@ -68,5 +69,5 @@ void main()
   }
   //vec3 scattering = L_insc * mie_phase * lightColor;
   vec3 scattering = L_insc / NUM_SAMPLES * lightColor;
-  color = 6 * vec4(scattering, 1.0f);
+  color = 6 * vec4(scattering, 1.0f) * lightInt;
 }

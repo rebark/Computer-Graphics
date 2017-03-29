@@ -38,6 +38,7 @@ in VS_OUT {
 uniform vec3 viewPos;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
+uniform float lightInt;
 
 //textures
 uniform sampler2D shadowMap;
@@ -113,14 +114,14 @@ void main()
 
 	//Diffuse
 	float diff = max(dot(normal, lightDir),0.0);
-	vec3 diffuse = diff * objectColor * lightColor;
+	vec3 diffuse = diff * objectColor * lightColor * lightInt;
 
 	//Specular
 	vec3 viewDir = normalize(viewPos- fs_in.FragPos);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 	vec3 specMap = vec3(texture(texture_specular1, fs_in.TexCoords));  
-	vec3 specular = spec * specMap * lightColor;
+	vec3 specular = spec * specMap * lightColor * lightInt;
 
 	//shadows
 	float shadow = ShadowCalculation(fs_in.FragPosLightSpace);

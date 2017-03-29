@@ -32,6 +32,10 @@ void Do_Movement();
 void set_lights(Shader &shader);
 void RenderQuad();
 void updateLight();
+void updateAngle(GLfloat amount);
+glm::vec3 changeColor(GLint rotation);
+glm::vec3 lerp(glm::vec3 color_1, glm::vec3 color_2, float alpha);
+
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
@@ -43,12 +47,26 @@ bool firstMouse = true;
 glm::vec3 lightPos(0.5f, 15.0f, 0.0f);
 glm::vec3 lampPos(0.5f, -0.8f, -4.2f);
 glm::vec3 spotPos(-0.1f, 1.0f, 2.3f);
+glm::vec3 lightColor;
+
+glm::vec3 day(1.0f, 1.0f, 1.0f);
+glm::vec3 dawn_sunrise(1.0f, 0.498f, 0.314f);
+glm::vec3 night(0.275f, 0.510f, 0.706f);
+//glm::vec3 night(0.690f, 0.769f, 0.871);
+
+GLfloat lightInt = 1.0f;
+GLfloat sunrise = 30.0f;
+GLfloat dawn = 150.0f;
+
+bool nightTime = false;
 
 //Delta time
 GLfloat deltaTime = 0.0f;   // Time between current frame and last frame
 GLfloat lastFrame = 0.0f;	// Time of last frame
+GLfloat delta = 0.0f;
+float angle = 90.0f;
 
-							// The MAIN function, from here we start our application and run our Game loop
+// The MAIN function, from here we start our application and run our Game loop
 int main()
 {
 	// Init GLFW
@@ -93,6 +111,8 @@ int main()
 	Model ourModel("nope/nope.obj");
 	Model eva("eva/eva1.obj");
 
+	//Initialize color light at sunrise
+	lightColor = day;
 	
 	// Configure depth map FBO
 	const GLuint SHADOW_WIDTH = 3000, SHADOW_HEIGHT = 3000;
@@ -168,10 +188,24 @@ int main()
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		delta += deltaTime;
+
+		//1,5° per second (range: 30 - 150)
+		if (delta >= 0.02) {
+			GLfloat amount = 0.05f;
+			updateAngle(amount);
+			glm::mat4 rotationMat(1);
+			GLint rotation = 1;
+			if (nightTime)
+				rotation *= -1;
+			rotationMat = glm::rotate(rotationMat, glm::radians(amount * rotation), glm::vec3(0.0, 0.0, 1.0));
+			lightPos = glm::vec3(rotationMat * glm::vec4(lightPos, 1.0));
+			lightColor = changeColor(rotation);
+			delta = 0.0f;
+			//std::cout << "Angle:" << angle << std::endl;
+		}
 		
-		glm::mat4 rotationMat(1);
-		rotationMat = glm::rotate(rotationMat, currentFrame / 50000, glm::vec3(0.0, 0.0, 1.0));
-		lightPos = glm::vec3(rotationMat * glm::vec4(lightPos, 1.0));
+			
 		
 		// Check and call events
 		glfwPollEvents();
@@ -255,7 +289,8 @@ int main()
 		GLint viewPosLoc2 = glGetUniformLocation(godRays.Program, "viewPos");
 		glUniform3f(viewPosLoc2, camera.Position.x, camera.Position.y, camera.Position.z);
 		glUniform3f(glGetUniformLocation(godRays.Program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform3f(glGetUniformLocation(godRays.Program, "lightColor"), 1.0f, 1.0f, 1.0f);
+		glUniform3f(glGetUniformLocation(godRays.Program, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+		glUniform1f(glGetUniformLocation(godRays.Program, "lightInt"), lightInt);
 		// Transformation matrices
 		glUniformMatrix4fv(glGetUniformLocation(godRays.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(glGetUniformLocation(godRays.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
@@ -304,7 +339,8 @@ void set_lights(Shader &shader) {
 
 	// Directional light
 	glUniform3f(glGetUniformLocation(shader.Program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-	glUniform3f(glGetUniformLocation(shader.Program, "lightColor"), 1.0f, 1.0f, 1.0f);
+	glUniform3f(glGetUniformLocation(shader.Program, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+	glUniform1f(glGetUniformLocation(shader.Program, "lightInt"), lightInt);
 
 	//Point Light
 	glUniform3f(glGetUniformLocation(shader.Program, "pointLight.position"), lampPos.x, lampPos.y, lampPos.z);
@@ -327,6 +363,7 @@ void set_lights(Shader &shader) {
 	glUniform1f(glGetUniformLocation(shader.Program, "spotLight.outerCutOff"), glm::cos(glm::radians(15.0f)));
 	
 }
+
 
 
 // RenderQuad() Renders a 1x1 quad in NDC, best used for framebuffer color targets
@@ -364,6 +401,45 @@ void updateLight() {
 	glm::mat4 rotationMat(1);
 	//rotationMat = glm::rotate(rotationMat, currentFrame / 100000, glm::vec3(0.0, 0.0, 1.0));
 	lightPos = glm::vec3(rotationMat * glm::vec4(lightPos, 1.0));
+}
+
+void updateAngle(GLfloat amount)
+{
+	angle += amount;
+	if (angle > 180) {
+		nightTime = true;
+		lightColor = night;
+		lightInt = 0.5f;
+		angle = -180.0f;
+	}
+	else if (angle > 1.0f && nightTime) {
+		nightTime = false;
+		lightColor = dawn_sunrise;
+		lightInt = 1.0f;
+	}
+}
+
+glm::vec3 changeColor(GLint rotation)
+{
+	if (nightTime) {
+		return night;
+	} else if (angle > 25.0f && angle < 40.0f) {
+		return lerp(lightColor, day, 0.997f);
+	} else if (angle > 145.0f && angle < 160.0f) {
+		return lerp(lightColor, dawn_sunrise, 0.997f);
+	} else if (angle > 170.0f || (angle < 20.0f && rotation == -1)) {
+		return lerp(lightColor, night, 0.987f);
+	}else if ((angle > -180.0f && angle < -160.0f) || (angle < 20.0f)) {
+		return lerp(lightColor, dawn_sunrise, 0.995f);
+	}
+	
+	return lightColor;
+}
+
+glm::vec3 lerp(glm::vec3 color_1, glm::vec3 color_2, float alpha)
+{
+	glm::vec3 color = alpha * color_1 + (1.0f - alpha) * color_2;
+	return color;
 }
 
 
