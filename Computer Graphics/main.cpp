@@ -66,6 +66,24 @@ GLfloat lastFrame = 0.0f;	// Time of last frame
 GLfloat delta = 0.0f;
 float angle = 90.0f;
 
+//Eva Movement
+//Relative numbers
+GLfloat evaDelta = 0.0f;	// Delta of time
+float deltaAngle = 0.0f;	// Delta of orientation
+float deltaZ = 0.0f;		// Delta of movement over Z axis
+//Actual position
+glm::vec3 evaPos(0.0f, 0.0f, 0.0f);
+float evaAngle = 0.0f;
+//Sine wave
+float wavelength = 1;
+float amplitude = 0.02;
+float theta = 0.0f;
+//Increments
+float incTheta = 0.03;		// Increment of sine angle
+float updateZ = 0.2f;		// Movement over Z axis
+//Booleans
+bool rotateEva = false;
+
 // The MAIN function, from here we start our application and run our Game loop
 int main()
 {
@@ -189,6 +207,7 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		delta += deltaTime;
+		evaDelta += deltaTime;
 
 		//1,5° per second (range: 30 - 150)
 		if (delta >= 0.02) {
@@ -269,6 +288,36 @@ int main()
 		ourModel.Draw(shader);
 		glm::mat4 evaMod;
 		evaMod = glm::scale(evaMod, glm::vec3(0.2f));
+		if (evaDelta > 0.02f) {
+			float k = 2 * 3.14 / wavelength;
+			
+			glm::mat4 evaRotationMat(1);
+
+			if (deltaZ > 60.0f) {
+				rotateEva = true;
+				deltaZ = 0.0f;
+				updateZ *= 0.2;
+			}
+			if (deltaAngle > 3.1415) {
+				rotateEva = false;
+				deltaAngle = 0.0f;
+				updateZ *= -5;
+			}
+
+			evaPos.y += amplitude * sin(k * theta);
+			theta += incTheta;
+			
+			evaMod *= glm::translate(evaRotationMat, evaPos);
+			evaPos.z += updateZ;
+			deltaZ += abs(updateZ);
+			if (rotateEva) {
+				GLint rotation = 1;
+				evaAngle += incTheta;
+				deltaAngle += incTheta;
+				evaRotationMat = glm::rotate(evaRotationMat, glm::radians(incTheta * rotation), glm::vec3(0.0, 1.0, 0.0));
+			}
+			evaMod *= glm::rotate(evaRotationMat, evaAngle, glm::vec3(0.0, 1.0, 0.0));
+		}
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(evaMod));
 		eva.Draw(shader);
 
