@@ -38,7 +38,7 @@ glm::vec3 lerp(glm::vec3 color_1, glm::vec3 color_2, float alpha);
 
 
 // Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 11.0f));
 bool keys[1024];
 GLfloat lastX = 400, lastY = 300;
 bool firstMouse = true;
@@ -52,12 +52,8 @@ glm::vec3 lightColor;
 glm::vec3 day(1.0f, 1.0f, 1.0f);
 glm::vec3 dawn_sunrise(1.0f, 0.498f, 0.314f);
 glm::vec3 night(0.275f, 0.510f, 0.706f);
-//glm::vec3 night(0.690f, 0.769f, 0.871);
 
 GLfloat lightInt = 1.0f;
-GLfloat sunrise = 30.0f;
-GLfloat dawn = 150.0f;
-
 bool nightTime = false;
 
 //Delta time
@@ -216,7 +212,7 @@ int main()
 			glm::mat4 rotationMat(1);
 			GLint rotation = 1;
 			if (nightTime)
-				rotation *= -1;
+				rotation = -1;
 			rotationMat = glm::rotate(rotationMat, glm::radians(amount * rotation), glm::vec3(0.0, 0.0, 1.0));
 			lightPos = glm::vec3(rotationMat * glm::vec4(lightPos, 1.0));
 			lightColor = changeColor(rotation);
@@ -257,6 +253,43 @@ int main()
 		// Draw the loaded model
 		glm::mat4 model;
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+		
+		glm::mat4 evaMod;
+		evaMod = glm::scale(evaMod, glm::vec3(0.2f));
+
+		if (evaDelta > 0.02f) {
+			float k = 2 * 3.14 / wavelength;
+
+			glm::mat4 evaRotationMat(1);
+
+			if (deltaZ > 60.0f) {
+				rotateEva = true;
+				deltaZ = 0.0f;
+				updateZ *= 0.2;
+			}
+			if (deltaAngle > 3.1415) {
+				rotateEva = false;
+				deltaAngle = 0.0f;
+				updateZ *= -5;
+			}
+
+			evaPos.y += amplitude * sin(k * theta);
+			theta += incTheta;
+
+			evaMod *= glm::translate(evaRotationMat, evaPos);
+			evaPos.z += updateZ;
+			deltaZ += abs(updateZ);
+			if (rotateEva) {
+				GLint rotation = 1;
+				evaAngle += incTheta;
+				deltaAngle += incTheta;
+				evaRotationMat = glm::rotate(evaRotationMat, glm::radians(incTheta * rotation), glm::vec3(0.0, 1.0, 0.0));
+			}
+			evaMod *= glm::rotate(evaRotationMat, evaAngle, glm::vec3(0.0, 1.0, 0.0));
+		}
+
+		glUniformMatrix4fv(glGetUniformLocation(simpleDepthShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(evaMod));
+		eva.Draw(simpleDepthShader);
 		glUniformMatrix4fv(glGetUniformLocation(simpleDepthShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		ourModel.Draw(simpleDepthShader);
 		
@@ -286,38 +319,8 @@ int main()
 		glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 0);
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		ourModel.Draw(shader);
-		glm::mat4 evaMod;
-		evaMod = glm::scale(evaMod, glm::vec3(0.2f));
-		if (evaDelta > 0.02f) {
-			float k = 2 * 3.14 / wavelength;
-			
-			glm::mat4 evaRotationMat(1);
-
-			if (deltaZ > 60.0f) {
-				rotateEva = true;
-				deltaZ = 0.0f;
-				updateZ *= 0.2;
-			}
-			if (deltaAngle > 3.1415) {
-				rotateEva = false;
-				deltaAngle = 0.0f;
-				updateZ *= -5;
-			}
-
-			evaPos.y += amplitude * sin(k * theta);
-			theta += incTheta;
-			
-			evaMod *= glm::translate(evaRotationMat, evaPos);
-			evaPos.z += updateZ;
-			deltaZ += abs(updateZ);
-			if (rotateEva) {
-				GLint rotation = 1;
-				evaAngle += incTheta;
-				deltaAngle += incTheta;
-				evaRotationMat = glm::rotate(evaRotationMat, glm::radians(incTheta * rotation), glm::vec3(0.0, 1.0, 0.0));
-			}
-			evaMod *= glm::rotate(evaRotationMat, evaAngle, glm::vec3(0.0, 1.0, 0.0));
-		}
+		
+		
 		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(evaMod));
 		eva.Draw(shader);
 
@@ -349,6 +352,8 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		glUniformMatrix4fv(glGetUniformLocation(godRays.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		ourModel.Draw(godRays);
+		glUniformMatrix4fv(glGetUniformLocation(godRays.Program, "model"), 1, GL_FALSE, glm::value_ptr(evaMod));
+		eva.Draw(godRays);
 		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
@@ -463,23 +468,20 @@ void updateAngle(GLfloat amount)
 	}
 	else if (angle > 1.0f && nightTime) {
 		nightTime = false;
-		lightColor = dawn_sunrise;
 		lightInt = 1.0f;
 	}
 }
 
 glm::vec3 changeColor(GLint rotation)
 {
-	if (nightTime) {
-		return night;
-	} else if (angle > 25.0f && angle < 40.0f) {
+	if (angle > 25.0f && angle < 45.0f) {
 		return lerp(lightColor, day, 0.997f);
 	} else if (angle > 145.0f && angle < 160.0f) {
 		return lerp(lightColor, dawn_sunrise, 0.997f);
-	} else if (angle > 170.0f || (angle < 20.0f && rotation == -1)) {
+	} else if (angle > 165.0f) {
 		return lerp(lightColor, night, 0.987f);
-	}else if ((angle > -180.0f && angle < -160.0f) || (angle < 20.0f)) {
-		return lerp(lightColor, dawn_sunrise, 0.995f);
+	}else if (angle > -5.0f && angle < 25.0f) {
+		return lerp(lightColor, dawn_sunrise, 0.96f);
 	}
 	
 	return lightColor;

@@ -1,6 +1,6 @@
 #version 330 core
 
-#define NUM_SAMPLES 100.0f //antilag
+#define NUM_SAMPLES 50.0f //antilag
 #define G_SCATTERING 0.2f
 #define PI 3.14159f
 #define TAU 0.00002f
